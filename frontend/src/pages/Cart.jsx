@@ -15,10 +15,13 @@ const Cart = () => {
       const tempData = [];
       for (const item in cartItems) {
         if (cartItems[item] > 0) {
-          tempData.push({
-            _id: item,
-            quantity: cartItems[item],
-          });
+          const itemExists = products.some((product) => product._id === item);
+          if (itemExists) {
+            tempData.push({
+              _id: item,
+              quantity: cartItems[item],
+            });
+          }
         }
       }
       setCartData(tempData);
@@ -36,6 +39,9 @@ const Cart = () => {
           const productData = products.find(
             (product) => product._id === item._id
           );
+
+          if (!productData) return null;
+
           return (
             <div
               key={index}
@@ -62,14 +68,14 @@ const Cart = () => {
                     e.target.value === "" || e.target.value === "0"
                       ? null
                       : updateQuantity(
-                          item._id,
-                          Number(e.target.value)
-                        )
+                        item._id,
+                        Number(e.target.value)
+                      )
                   }
                   className="border max-w-10 sm:max-w-20 px-1 sm:px-2 py-1 transform -translate-y-14"
                   type="number"
                   min={1}
-                  max={productData.quantity} 
+                  max={productData.quantity}
                 />
                 <img
                   onClick={() =>

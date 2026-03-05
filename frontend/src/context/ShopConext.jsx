@@ -59,12 +59,12 @@ const ShopContextProvider = (props) => {
   const getCartCount = () => {
     let totalCount = 0;
     for (const item in cartItems) {
-      try {
-        if (cartItems[item] > 0) {
+      if (cartItems[item] > 0) {
+        // Only count if the product exists in the current products list
+        const productExists = products.some((p) => p._id === item);
+        if (productExists) {
           totalCount += cartItems[item];
         }
-      } catch (error) {
-        console.error(error);
       }
     }
     return totalCount;
