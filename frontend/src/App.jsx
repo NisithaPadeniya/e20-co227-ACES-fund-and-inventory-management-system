@@ -19,10 +19,12 @@ import Footer from "./components/Footer";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PrivateRoute from "./PrivateRoute/PrivateRoute";
+import ScrollToTop from "./components/ScrollToTop";
 
 const App = () => {
   return (
     <div className="px-4 sm:px-[5vw] md:px-[7vw] lg:px=[9vw]">
+      <ScrollToTop />
       <ToastContainer />
       <Navbar />
 
@@ -30,13 +32,13 @@ const App = () => {
         <Route path="/" element={<Home />} />
 
         <Route path="/about" element={<About />} />
-        
+
         <Route path="/login" element={<Login />} />
 
         {/* Protected Routes  */}
         <Route path="/cart" element={<PrivateRoute><Cart /></PrivateRoute>} />
         <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-        <Route path="/fund-form"  element={<PrivateRoute><FundForm /></PrivateRoute>} />
+        <Route path="/fund-form" element={<PrivateRoute><FundForm /></PrivateRoute>} />
         <Route path="/inventory-form" element={<PrivateRoute><InventoryForm /></PrivateRoute>} />
         <Route path="/product/:productId" element={<PrivateRoute><Product /></PrivateRoute>} />
 
@@ -46,10 +48,10 @@ const App = () => {
         <Route path="/inventory-form" element={<InventoryForm />} />
         <Route path="/product/:productId" element={<Product />} /> */}
 
-      
+
         <Route path="/inventory" element={<Inventory />} />
         <Route path="/contact" element={<Contact />} />
-        
+
       </Routes>
       <Footer />
     </div>
