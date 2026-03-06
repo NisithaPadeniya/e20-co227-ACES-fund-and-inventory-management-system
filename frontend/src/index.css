@@ -1,3 +1,8 @@
+html {
+  scroll-behavior: smooth;
+  overscroll-behavior-y: none;
+}
+
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Prata&display=swap');
 @tailwind base;
 @tailwind components;
@@ -6,43 +11,43 @@
 
 a.active {
   font-weight: bold;
+
   hr {
     display: block;
   }
 }
 
-*{
-    font-family: Outfit;
+* {
+  font-family: Outfit;
 }
 
 .prata-regular {
-    font-family: "Prata", serif;
-    font-weight: 400;
-    font-style: normal;
-  }
+  font-family: "Prata", serif;
+  font-weight: 400;
+  font-style: normal;
+}
 
-  ::-webkit-scrollbar{
-    display: none;
-  }
+::-webkit-scrollbar {
+  display: none;
+}
 
-  @media(max-width:640px){
-    a.active{
-        background-color: black;
-        color: white;
-    }
+@media(max-width:640px) {
+  a.active {
+    background-color: black;
+    color: white;
   }
-  
-  
-  .navbar-fixed {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    width: 100%;
-    background-color: rgba(253, 253, 253, 0.9);
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    animation: fadeInDown 0.5s;
-    -webkit-animation: fadeInDown 0.5s;
-    z-index: 1000;
-  }
+}
 
+
+.navbar-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  background-color: rgba(253, 253, 253, 0.9);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  animation: fadeInDown 0.5s;
+  -webkit-animation: fadeInDown 0.5s;
+  z-index: 1000;
+}

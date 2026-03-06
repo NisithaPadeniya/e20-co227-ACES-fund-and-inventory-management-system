@@ -4,6 +4,7 @@ import Title from "../components/Title";
 import { assets } from "../assets/frontend_assets/assets";
 import axios from "axios";
 import jsPDF from "jspdf";
+import { toast } from "react-toastify";
 
 const Dashboard = () => {
   const { backendUrl, token, navigate } = useContext(ShopContext);
@@ -26,7 +27,7 @@ const Dashboard = () => {
       if (response.data.success) {
         setRequests(response.data.orders.reverse());
       }
-    } catch (error) {}
+    } catch (error) { }
   };
 
   const loadFundData = async () => {
@@ -44,7 +45,7 @@ const Dashboard = () => {
       if (response.data.success) {
         setFundRequests(response.data.userFundRequests.reverse());
       }
-    } catch (error) {}
+    } catch (error) { }
   };
 
   console.log(fundRequests);
@@ -57,8 +58,8 @@ const Dashboard = () => {
   const handleButtonClick = (type, status, reqId) => {
     if (status === "accepted") {
       generatePDF(type, reqId);
-      // Handle download PDF (dummy logic here)
-      alert(`Downloading PDF for request ${reqId}`);
+      // Handle download PDF
+      toast.info(`Preparing PDF download for request ${reqId}`);
     } else if (status === "declined" && type === "inventory") {
       // Navigate to the inventory page
       navigate("/inventory");
@@ -73,10 +74,10 @@ const Dashboard = () => {
   //     unit: 'pt',  // Specify units in points
   //     format: 'a4' // Use a standard A4 page size
   //   });
-  
+
   //   // Set font to a standard one, like 'helvetica'
   //   doc.setFont('helvetica', 'normal');
-    
+
 
   //   if (type === "inventory") {
   //     // Find the specific request using reqId
@@ -164,95 +165,144 @@ const Dashboard = () => {
   // };
   const generatePDF = (type, reqId) => {
     const doc = new jsPDF({
-      unit: 'pt',  // Specify units in points
-      format: 'a4' // Use a standard A4 page size
+      unit: "pt",
+      format: "a4",
     });
-  
-    // Set font to a standard one, like 'helvetica'
-    doc.setFont('helvetica', 'normal');
-  
-    if (type === "inventory") {
-      // Find the specific request using reqId
-      const request = requests.find((req) => req._id === reqId);
-  
-      if (request) {
-        let y = 20; // Initialize y-coordinate for the first line
-  
-        // Adding user info
-        doc.text("Inventory Request", 20, y);
-        y += 30;
-        doc.text(`Requested by: ${request.userInfo.firstName} ${request.userInfo.lastName}`, 20, y);
-        y += 30;
-        doc.text(`Email: ${request.userInfo.email}`, 20, y);
-        y += 30;
-        doc.text(`Phone: ${request.userInfo.phone}`, 20, y);
-        y += 30;
-  
-        // Adding project info
-        doc.text(`Project: ${request.projectInfo.projectName}`, 20, y);
-        y += 30;
-        doc.text(`Description: ${request.projectInfo.projectDescription}`, 20, y);
-        y += 30;
-        doc.text(`Timeline: ${request.projectInfo.projectTimeline}`, 20, y);
-        y += 30;
-  
-        // Adding item details
-        doc.text("Items Requested:", 20, y);
-        y += 30;
-        request.items.forEach((item, index) => {
-          doc.text(`${item.name} x ${item.quantity}`, 20, y + index * 20);
-        });
-        y += request.items.length * 20;
-  
-        // Adding request metadata
-        
-        doc.text(`Request Date: ${new Date(request.date).toDateString()}`, 20, y);
-        y += 30;
-  
-        if (request.issuedDate) {
-          doc.text(`Issued Date: ${new Date(request.issuedDate).toDateString()}`, 20, y);
-          y += 30;
-        }
-        if (request.returnedDate) {
-          doc.text(`Returned Date: ${new Date(request.returnedDate).toDateString()}`, 20, y);
-          y += 30;
-        }
 
-        doc.text(`Verification Key: ${request.verificationKey}`, 20, y);
-        y += 60;
-  
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 40;
+    const contentWidth = pageWidth - 2 * margin;
+
+    // Helper function for adding wrapped text
+    const addWrappedText = (text, x, y, maxWidth, lineHeight) => {
+      const lines = doc.splitTextToSize(text, maxWidth);
+      lines.forEach((line) => {
+        doc.text(line, x, y);
+        y += lineHeight;
+      });
+      return y;
+    };
+
+    // Header
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("ACES - Fund & Inventory Management System", margin, 50);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text("University of Peradeniya | Department of Computer Engineering", margin, 65);
+
+    doc.setLineWidth(1);
+    doc.line(margin, 75, pageWidth - margin, 75);
+
+    let y = 100;
+
+    if (type === "inventory") {
+      const request = requests.find((req) => req._id === reqId);
+      if (request) {
+        doc.setFontSize(14);
+        doc.setFont("helvetica", "bold");
+        doc.text("Inventory Request Summary", margin, y);
+        y += 30;
+
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "bold");
+        doc.text("User Details:", margin, y);
+        y += 20;
+        doc.setFont("helvetica", "normal");
+        doc.text(`Name: ${request.userInfo.firstName} ${request.userInfo.lastName}`, margin + 10, y);
+        y += 15;
+        doc.text(`Email: ${request.userInfo.email}`, margin + 10, y);
+        y += 15;
+        doc.text(`Phone: ${request.userInfo.phone}`, margin + 10, y);
+        y += 30;
+
+        doc.setFont("helvetica", "bold");
+        doc.text("Project Details:", margin, y);
+        y += 20;
+        doc.setFont("helvetica", "normal");
+        doc.text(`Project Title: ${request.projectInfo.projectName}`, margin + 10, y);
+        y += 15;
+        doc.text("Description:", margin + 10, y);
+        y += 15;
+        y = addWrappedText(request.projectInfo.projectDescription, margin + 20, y, contentWidth - 20, 14);
+        y += 10;
+        doc.text(`Timeline: ${request.projectInfo.projectTimeline}`, margin + 10, y);
+        y += 30;
+
+        doc.setFont("helvetica", "bold");
+        doc.text("Requested Items:", margin, y);
+        y += 20;
+        doc.setFont("helvetica", "normal");
+        request.items.forEach((item) => {
+          doc.text(`• ${item.name} (x${item.quantity})`, margin + 10, y);
+          y += 15;
+        });
+        y += 20;
+
+        doc.setFont("helvetica", "bold");
+        doc.text("Verification Information:", margin, y);
+        y += 20;
+        doc.setFont("helvetica", "normal");
+        doc.text(`Request Date: ${new Date(request.date).toDateString()}`, margin + 10, y);
+        y += 15;
+        if (request.issuedDate) {
+          doc.text(`Issued Date: ${new Date(request.issuedDate).toDateString()}`, margin + 10, y);
+          y += 15;
+        }
+        doc.setFont("helvetica", "bold");
+        doc.text(`Verification Key: ${request.verificationKey}`, margin + 10, y);
+
         doc.save(`inventory_request_${reqId}.pdf`);
       }
     } else if (type === "fund") {
-      // Find the specific fund request using reqId
       const fundRequest = fundRequests.find((req) => req._id === reqId);
-  
       if (fundRequest) {
-        let y = 20; // Initialize y-coordinate for the first line
-  
-        // Adding fund request info
-        doc.text("Fund Request", 20, y);
+        doc.setFontSize(14);
+        doc.setFont("helvetica", "bold");
+        doc.text("Fund Request Summary", margin, y);
+        y += 30;
+
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "bold");
+        doc.text("Project Overview:", margin, y);
         y += 20;
-        doc.text(`Project Title: ${fundRequest.projectInfo.projectTitle}`, 20, y);
+        doc.setFont("helvetica", "normal");
+        doc.text(`Title: ${fundRequest.projectInfo.projectTitle}`, margin + 10, y);
+        y += 15;
+        doc.text(`Leader: ${fundRequest.leader}`, margin + 10, y);
+        y += 15;
+        doc.text(`Team Members: ${fundRequest.teamMembers.join(", ")}`, margin + 10, y);
+        y += 15;
+        doc.text(`Supervisor: ${fundRequest.supervisor.name}`, margin + 10, y);
+        y += 30;
+
+        doc.setFont("helvetica", "bold");
+        doc.text("Application Details:", margin, y);
         y += 20;
-        doc.text(`Project Leader: ${fundRequest.leader}`, 20, y);
+        doc.setFont("helvetica", "normal");
+        doc.text("Goals:", margin + 10, y);
+        y += 15;
+        y = addWrappedText(fundRequest.projectInfo.goal, margin + 20, y, contentWidth - 20, 14);
+        y += 10;
+        doc.text("Description/Risks:", margin + 10, y);
+        y += 15;
+        y = addWrappedText(fundRequest.projectInfo.projectDescription, margin + 20, y, contentWidth - 20, 14);
+        y += 30;
+
+        doc.setFont("helvetica", "bold");
+        doc.text("Verification Information:", margin, y);
         y += 20;
-        doc.text(`Team Members: ${fundRequest.teamMembers.join(", ")}`, 20, y);
-        y += 20;
-        doc.text(`Supervisor: ${fundRequest.supervisor.name}`, 20, y);
-        y += 20;
-        doc.text(`Verification Key: ${fundRequest.verificationKey}`, 20, y);
-        y += 20;
-  
-        // Adding request date
-        doc.text(`Request Date: ${new Date(fundRequest.date).toDateString()}`, 20, y);
-        
-        // Saving the PDF
+        doc.setFont("helvetica", "normal");
+        doc.text(`Request Date: ${new Date(fundRequest.date).toDateString()}`, margin + 10, y);
+        y += 15;
+        doc.setFont("helvetica", "bold");
+        doc.text(`Verification Key: ${fundRequest.verificationKey}`, margin + 10, y);
+
         doc.save(`fund_request_${reqId}.pdf`);
       }
     }
   };
-  
+
 
   return (
     <div className="border-t pt-16">
@@ -265,7 +315,7 @@ const Dashboard = () => {
           <div
             key={index}
             className="grid grid-cols-1 sm:grid-cols-[0.5fr_2fr_1fr] lg:grid-cols-[0.5fr_2fr_1fr_1fr_1fr] gap-3 items-start border-b border-gray-200 p-5 md:p-8 my-3 md:my-4 text-xs sm:text-sm text-gray-700"
-            // className="py-4 border-b text-gray-700 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+          // className="py-4 border-b text-gray-700 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
           >
             <img className="w-16 sm:w-20" src={assets.parcel_icon} />
             <div>
@@ -359,7 +409,7 @@ const Dashboard = () => {
           <div
             key={index}
             className="grid grid-cols-1 sm:grid-cols-[0.5fr_2fr_1fr] lg:grid-cols-[0.5fr_2fr_1fr_1fr_1fr] gap-3 items-start border-b border-gray-200 p-5 md:p-8 my-3 md:my-4 text-xs sm:text-sm text-gray-700"
-            // className="py-4 border-b text-gray-700 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+          // className="py-4 border-b text-gray-700 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
           >
             <img className="w-16 sm:w-20" src={assets.fund_icon} />
             <div>
@@ -405,12 +455,26 @@ const Dashboard = () => {
             {/* Conditionally Render Button */}
             <div>
               {req.status === "accepted" && (
-                <button
-                  className="border py-2 px-4 bg-blue-500 text-white font-medium rounded-sm"
-                  onClick={() => handleButtonClick("fund", "accepted", req._id)}
-                >
-                  Download PDF
-                </button>
+                <div className="flex flex-col gap-2">
+                  <button
+                    className="border py-2 px-4 bg-blue-500 text-white font-medium rounded-sm"
+                    onClick={() =>
+                      handleButtonClick("fund", "accepted", req._id)
+                    }
+                  >
+                    Download PDF
+                  </button>
+                  {req.budgetDetails && (
+                    <a
+                      href={req.budgetDetails}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="border py-2 px-4 bg-gray-100 text-gray-700 text-center font-medium rounded-sm"
+                    >
+                      View Budget
+                    </a>
+                  )}
+                </div>
               )}
               {req.status === "declined" && (
                 <button

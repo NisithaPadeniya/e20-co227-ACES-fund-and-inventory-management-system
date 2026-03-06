@@ -37,6 +37,7 @@ const ShopContextProvider = (props) => {
 
     // Update the cart items state
     setCartItems(cartData);
+    toast.success("Added to Cart");
 
     if (token) {
       try {
